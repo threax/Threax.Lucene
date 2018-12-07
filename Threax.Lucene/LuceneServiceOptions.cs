@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Threax.AspNetCore.Lucene
+namespace Threax.Lucene
 {
     public class LuceneServiceOptions
     {

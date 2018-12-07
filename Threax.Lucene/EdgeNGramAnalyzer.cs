@@ -8,7 +8,7 @@ using System.Text;
 
 namespace Threax.Lucene
 {
-    class EdgeNGramAnalyzer : Analyzer
+    public class EdgeNGramAnalyzer : Analyzer
     {
         private LuceneVersion Version;
         private int minGram;
