@@ -67,7 +67,7 @@ namespace Threax.Lucene
 
         protected SearcherManager SearchManager { get => searchManager;}
 
-        public IEnumerable<SearchResult> Search(String query)
+        public async Task<IEnumerable<SearchResult>> Search(String query)
         {
             EnsureSearchManager(true);
 
@@ -85,11 +85,7 @@ namespace Threax.Lucene
 
                 var hits = searcher.Search(lQuery, maxResults);
 
-                foreach (var scoreDoc in hits.ScoreDocs)
-                {
-                    var doc = searcher.Doc(scoreDoc.Doc);
-                    yield return CreateResult(scoreDoc, doc);
-                }
+                return await CreateResults(searcher, hits);
             }
             finally
             {
@@ -101,7 +97,7 @@ namespace Threax.Lucene
             }
         }
 
-        protected abstract SearchResult CreateResult(ScoreDoc scoreDoc, Document doc);
+        protected abstract Task<IEnumerable<SearchResult>> CreateResults(IndexSearcher searcher, TopDocs hits);
 
         /// <summary>
         /// Ensure that a search manager is created, will return true if a searcher is created and usable, false if it is not.
