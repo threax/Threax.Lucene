@@ -78,29 +78,52 @@ namespace Threax.Lucene
             EnsureSearchManager(true);
 
             QueryParser queryParser = null;
-            searchManager.MaybeRefreshBlocking();
-            IndexSearcher searcher = searchManager.Acquire();
             try
             {
-                if (!parserPool.TryTake(out queryParser))
+                using (var searcherManager = AcquireSearcher())
                 {
-                    queryParser = new MultiFieldQueryParser(version, queryFields, analyzer);
+                    if (!parserPool.TryTake(out queryParser))
+                    {
+                        queryParser = CreateQueryParser(version, queryFields, analyzer);
+                    }
+
+                    var lQuery = queryParser.Parse(query);
+
+                    var hits = searcherManager.Searcher.Search(lQuery, maxResults);
+
+                    return CreateResults(searcherManager.Searcher, hits);
                 }
-
-                var lQuery = queryParser.Parse(query);
-
-                var hits = searcher.Search(lQuery, maxResults);
-
-                return CreateResults(searcher, hits);
             }
             finally
             {
-                searchManager.Release(searcher);
                 if (queryParser != null)
                 {
                     parserPool.Add(queryParser);
                 }
             }
+        }
+
+        /// <summary>
+        /// Create a query parser for the Search function. The default version of this function will create 
+        /// a MultiFieldQueryParser. The parsers created here will be pooled.
+        /// </summary>
+        /// <param name="version"></param>
+        /// <param name="queryFields"></param>
+        /// <param name="analyzer"></param>
+        /// <returns></returns>
+        protected QueryParser CreateQueryParser(LuceneVersion version, String[] queryFields, Analyzer analyzer)
+        {
+            return new MultiFieldQueryParser(version, queryFields, analyzer);
+        }
+
+        /// <summary>
+        /// Get a IndexSearcher. Be sure to dispose the result of this function.
+        /// </summary>
+        /// <returns></returns>
+        protected IndexSearcherManager AcquireSearcher()
+        {
+            EnsureSearchManager(true);
+            return new IndexSearcherManager(searchManager);
         }
 
         protected abstract IEnumerable<SearchResult> CreateResults(IndexSearcher searcher, TopDocs hits);
