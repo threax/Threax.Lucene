@@ -2,13 +2,13 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <Version>1.2.0-pre01</Version>
+    <Version>1.2.0</Version>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <IncludeSymbols>True</IncludeSymbols>
     <IncludeSource>True</IncludeSource>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>1701;1702;1705;1591</NoWarn>
-    <PackageReleaseNotes>Changed how services are registered. Also changes basic layout a bit.</PackageReleaseNotes>
+    <PackageReleaseNotes>Added the ability to have multiple lucene indices in the dependency injection.</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
