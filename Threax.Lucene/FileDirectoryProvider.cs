@@ -6,11 +6,11 @@ using Lucene.Net.Store;
 
 namespace Threax.Lucene
 {
-    public class FileDirectoryProvider : ILuceneDirectoryProvider
+    public class FileDirectoryProvider<T> : ILuceneDirectoryProvider<T>
     {
         String indexPath;
 
-        public FileDirectoryProvider(LuceneServiceOptions options)
+        public FileDirectoryProvider(LuceneServiceOptions<T> options)
         {
             this.indexPath = options.IndexPath;
         }
@@ -23,6 +23,13 @@ namespace Threax.Lucene
             }
 
             return FSDirectory.Open(indexPath);
+        }
+    }
+
+    public class FileDirectoryProvider : FileDirectoryProvider<GenericSearchPlaceholder>, ILuceneDirectoryProvider
+    {
+        public FileDirectoryProvider(LuceneServiceOptions options) : base(options)
+        {
         }
     }
 }

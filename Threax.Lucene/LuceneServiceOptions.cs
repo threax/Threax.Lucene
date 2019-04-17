@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Threax.Lucene
 {
-    public class LuceneServiceOptions
+    public class LuceneServiceOptions<T>
     {
         public LuceneServiceOptions()
         {
@@ -29,5 +29,10 @@ namespace Threax.Lucene
         /// more than this value will be returned. Defaults to 100.
         /// </summary>
         public int MaxResults { get; set; } = 100;
+    }
+
+    public class LuceneServiceOptions : LuceneServiceOptions<GenericSearchPlaceholder>
+    {
+
     }
 }

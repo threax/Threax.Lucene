@@ -17,13 +17,14 @@ namespace Threax.Lucene
     /// writer.UpdateDocument(new Lucene.Net.Index.Term(IdField, "YourData"), doc); //Use the page links as ids, see if we can avoid the string
     /// </code>
     /// </summary>
-    /// <typeparam name="SearchResult"></typeparam>
-    public abstract class SearchWithIndex<SearchResult, Id> : SearchBase<SearchResult>
+    /// <typeparam name="SearchResult">The type of the search result.</typeparam>
+    /// <typeparam name="TISearchService">The type of the search service, used to discover other dependencies.</typeparam>
+    public abstract class SearchWithIndex<SearchResult, TISearchService, Id> : SearchBase<SearchResult, TISearchService>
     {
         private String idField;
         private List<Id> currentIndexDocs;
 
-        public SearchWithIndex(String idField, ILuceneDirectoryProvider directoryProvider, LuceneServiceOptions options) 
+        public SearchWithIndex(String idField, ILuceneDirectoryProvider<TISearchService> directoryProvider, LuceneServiceOptions<TISearchService> options) 
             : base(directoryProvider, options)
         {
             this.idField = idField;
@@ -72,9 +73,21 @@ namespace Threax.Lucene
         }
     }
 
-    public abstract class SearchWithIndexGuid<SearchResult> : SearchWithIndex<SearchResult, Guid>
+    public abstract class SearchWithIndex<SearchResult, Id> : SearchWithIndex<SearchResult, GenericSearchPlaceholder, Id>
     {
-        public SearchWithIndexGuid(string idField, ILuceneDirectoryProvider directoryProvider, LuceneServiceOptions options) : base(idField, directoryProvider, options)
+        public SearchWithIndex(string idField, ILuceneDirectoryProvider directoryProvider, LuceneServiceOptions options) : base(idField, directoryProvider, options)
+        {
+        }
+    }
+
+    /// <summary>
+    /// A search index with a guid for its key.
+    /// </summary>
+    /// <typeparam name="SearchResult">The type of the search result.</typeparam>
+    /// <typeparam name="TISearchService">The type of the search service, used to discover other dependencies.</typeparam>
+    public abstract class SearchWithIndexGuid<SearchResult, TISearchService> : SearchWithIndex<SearchResult, TISearchService, Guid>
+    {
+        public SearchWithIndexGuid(string idField, ILuceneDirectoryProvider<TISearchService> directoryProvider, LuceneServiceOptions<TISearchService> options) : base(idField, directoryProvider, options)
         {
         }
 
@@ -84,9 +97,21 @@ namespace Threax.Lucene
         }
     }
 
-    public abstract class SearchWithIndexInt32<SearchResult> : SearchWithIndex<SearchResult, Int32>
+    public abstract class SearchWithIndexGuid<SearchResult> : SearchWithIndexGuid<SearchResult, GenericSearchPlaceholder>
     {
-        public SearchWithIndexInt32(string idField, ILuceneDirectoryProvider directoryProvider, LuceneServiceOptions options) : base(idField, directoryProvider, options)
+        public SearchWithIndexGuid(string idField, ILuceneDirectoryProvider directoryProvider, LuceneServiceOptions options) : base(idField, directoryProvider, options)
+        {
+        }
+    }
+
+    /// <summary>
+    /// A search index with an int for its key.
+    /// </summary>
+    /// <typeparam name="SearchResult">The type of the search result.</typeparam>
+    /// <typeparam name="TISearchService">The type of the search service, used to discover other dependencies.</typeparam>
+    public abstract class SearchWithIndexInt32<SearchResult, TISearchService> : SearchWithIndex<SearchResult, TISearchService, Int32>
+    {
+        public SearchWithIndexInt32(string idField, ILuceneDirectoryProvider<TISearchService> directoryProvider, LuceneServiceOptions<TISearchService> options) : base(idField, directoryProvider, options)
         {
         }
 
@@ -96,9 +121,21 @@ namespace Threax.Lucene
         }
     }
 
-    public abstract class SearchWithIndexInt64<SearchResult> : SearchWithIndex<SearchResult, Int64>
+    public abstract class SearchWithIndexInt32<SearchResult> : SearchWithIndexInt32<SearchResult, GenericSearchPlaceholder>
     {
-        public SearchWithIndexInt64(string idField, ILuceneDirectoryProvider directoryProvider, LuceneServiceOptions options) : base(idField, directoryProvider, options)
+        public SearchWithIndexInt32(string idField, ILuceneDirectoryProvider directoryProvider, LuceneServiceOptions options) : base(idField, directoryProvider, options)
+        {
+        }
+    }
+
+    /// <summary>
+    /// A search index with a long for its key.
+    /// </summary>
+    /// <typeparam name="SearchResult">The type of the search result.</typeparam>
+    /// <typeparam name="TISearchService">The type of the search service, used to discover other dependencies.</typeparam>
+    public abstract class SearchWithIndexInt64<SearchResult, TISearchService> : SearchWithIndex<SearchResult, TISearchService, Int64>
+    {
+        public SearchWithIndexInt64(string idField, ILuceneDirectoryProvider<TISearchService> directoryProvider, LuceneServiceOptions<TISearchService> options) : base(idField, directoryProvider, options)
         {
         }
 
@@ -108,15 +145,34 @@ namespace Threax.Lucene
         }
     }
 
-    public abstract class SearchWithIndexString<SearchResult> : SearchWithIndex<SearchResult, String>
+    public abstract class SearchWithIndexInt64<SearchResult> : SearchWithIndexInt64<SearchResult, GenericSearchPlaceholder>
     {
-        public SearchWithIndexString(string idField, ILuceneDirectoryProvider directoryProvider, LuceneServiceOptions options) : base(idField, directoryProvider, options)
+        public SearchWithIndexInt64(string idField, ILuceneDirectoryProvider directoryProvider, LuceneServiceOptions options) : base(idField, directoryProvider, options)
+        {
+        }
+    }
+
+    /// <summary>
+    /// A search index with a string for its key.
+    /// </summary>
+    /// <typeparam name="SearchResult">The type of the search result.</typeparam>
+    /// <typeparam name="TISearchService">The type of the search service, used to discover other dependencies.</typeparam>
+    public abstract class SearchWithIndexString<SearchResult, TISearchService> : SearchWithIndex<SearchResult, TISearchService, String>
+    {
+        public SearchWithIndexString(string idField, ILuceneDirectoryProvider<TISearchService> directoryProvider, LuceneServiceOptions<TISearchService> options) : base(idField, directoryProvider, options)
         {
         }
 
         protected sealed override String GetId(string strId)
         {
             return strId;
+        }
+    }
+
+    public abstract class SearchWithIndexString<SearchResult> : SearchWithIndexString<SearchResult, GenericSearchPlaceholder>
+    {
+        public SearchWithIndexString(string idField, ILuceneDirectoryProvider directoryProvider, LuceneServiceOptions options) : base(idField, directoryProvider, options)
+        {
         }
     }
 }

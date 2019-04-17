@@ -6,8 +6,13 @@ using System.Threading.Tasks;
 
 namespace Threax.Lucene
 {
-    public interface ILuceneDirectoryProvider
+    public interface ILuceneDirectoryProvider<T>
     {
         Directory CreateDirectory();
+    }
+
+    public interface ILuceneDirectoryProvider : ILuceneDirectoryProvider<GenericSearchPlaceholder>
+    {
+        
     }
 }

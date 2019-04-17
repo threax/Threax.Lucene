@@ -18,8 +18,9 @@ namespace Threax.Lucene
     /// A lucene search base class for a search over multiple fields. The exact analyzer, data load and search results
     /// are up to the subclasses.
     /// </summary>
-    /// <typeparam name="SearchResult"></typeparam>
-    public abstract class SearchBase<SearchResult> : IDisposable
+    /// <typeparam name="SearchResult">The type of the search result.</typeparam>
+    /// <typeparam name="TISearchService">The type of the search service, used to discover other dependencies.</typeparam>
+    public abstract class SearchBase<SearchResult, TISearchService> : IDisposable
     {
         protected const LuceneVersion version = LuceneVersion.LUCENE_48;
 
@@ -33,7 +34,7 @@ namespace Threax.Lucene
 
         private int maxResults;
 
-        public SearchBase(ILuceneDirectoryProvider directoryProvider, LuceneServiceOptions options)
+        public SearchBase(ILuceneDirectoryProvider<TISearchService> directoryProvider, LuceneServiceOptions<TISearchService> options)
         {
             maxResults = options.MaxResults;
             this.directory = directoryProvider.CreateDirectory();
@@ -154,6 +155,13 @@ namespace Threax.Lucene
                 }
             }
             return true;
+        }
+    }
+
+    public abstract class SearchBase<SearchResult> : SearchBase<SearchResult, GenericSearchPlaceholder>
+    {
+        public SearchBase(ILuceneDirectoryProvider directoryProvider, LuceneServiceOptions options) : base(directoryProvider, options)
+        {
         }
     }
 }
