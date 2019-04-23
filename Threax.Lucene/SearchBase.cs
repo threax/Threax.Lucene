@@ -66,7 +66,9 @@ namespace Threax.Lucene
             }
         }
 
-        protected SearcherManager SearchManager { get => searchManager;}
+        protected internal SearcherManager SearchManager { get => this.searchManager; }
+
+        protected int MaxResults { get => this.maxResults; }
 
         /// <summary>
         /// Get the search results for the given query. This is not async since you can do any async
@@ -76,45 +78,41 @@ namespace Threax.Lucene
         /// <returns></returns>
         public IEnumerable<SearchResult> Search(String query)
         {
-            EnsureSearchManager(true);
-
-            QueryParser queryParser = null;
-            try
+            using(var queryParserManager = AcquireQueryParser())
             {
-                using (var searcherManager = AcquireSearcher())
-                {
-                    if (!parserPool.TryTake(out queryParser))
-                    {
-                        queryParser = CreateQueryParser(version, queryFields, analyzer);
-                    }
+                var lQuery = queryParserManager.Parser.Parse(query);
 
-                    var lQuery = queryParser.Parse(query);
-
-                    var hits = searcherManager.Searcher.Search(lQuery, maxResults);
-
-                    return CreateResults(searcherManager.Searcher, hits);
-                }
-            }
-            finally
-            {
-                if (queryParser != null)
-                {
-                    parserPool.Add(queryParser);
-                }
+                return Search(lQuery);
             }
         }
 
         /// <summary>
-        /// Create a query parser for the Search function. The default version of this function will create 
-        /// a MultiFieldQueryParser. The parsers created here will be pooled.
+        /// Run a search with an optional sort and max results. This provides an easy way to search with a bit more control.
+        /// If you need more control than this call AcquireSearcher (be sure to dispose it) and run the search yourself calling
+        /// CreateResults with the hits.
         /// </summary>
-        /// <param name="version"></param>
-        /// <param name="queryFields"></param>
-        /// <param name="analyzer"></param>
+        /// <param name="query">The lucene query to run.</param>
+        /// <param name="maxResults">The max number of results. This must have a value or the default max will be used.</param>
+        /// <param name="sort">The sort object to sort by.</param>
         /// <returns></returns>
-        protected QueryParser CreateQueryParser(LuceneVersion version, String[] queryFields, Analyzer analyzer)
+        public IEnumerable<SearchResult> Search(Query query, int? maxResults = null, Sort sort = null)
         {
-            return new MultiFieldQueryParser(version, queryFields, analyzer);
+            EnsureSearchManager(true);
+
+            using (var searcherManager = AcquireSearcher())
+            {
+                TopDocs hits;
+                if (sort == null)
+                {
+                    hits = searcherManager.Searcher.Search(query, maxResults ?? this.maxResults);
+                }
+                else
+                {
+                    hits = searcherManager.Searcher.Search(query, maxResults ?? this.maxResults, sort);
+                }
+
+                return CreateResults(searcherManager.Searcher, hits);
+            }
         }
 
         /// <summary>
@@ -125,6 +123,17 @@ namespace Threax.Lucene
         {
             EnsureSearchManager(true);
             return new IndexSearcherManager(searchManager);
+        }
+
+        /// <summary>
+        /// Get a query parser that will query all fields. Be sure to dispose the returned QueryParserManager or the parsers
+        /// will never return to the pool.
+        /// </summary>
+        /// <returns></returns>
+        public QueryParserManager AcquireQueryParser()
+        {
+            EnsureSearchManager(true);
+            return new QueryParserManager(parserPool, version, queryFields, analyzer);
         }
 
         protected abstract IEnumerable<SearchResult> CreateResults(IndexSearcher searcher, TopDocs hits);
